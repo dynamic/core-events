@@ -1,3 +1,15 @@
 ---
 Name: Core Events
 ---
+DateField:
+  default_config:
+    showcalendar: true
+Event:
+  extensions:
+    - FlexSlider
+EventHolder_Controller:
+  extensions:
+    - FlexSliderExtension
+SlideImage:
+  extensions:
+    - CoreEventSlideImageDataExtension
