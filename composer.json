@@ -1,0 +1,21 @@
+{
+    "name": "dynamic/core-events",
+    "description": "Event Calendar for Dynamic Core",
+    "keywords": ["silverstripe", "dynamic", "module", "core", "events"],
+    "license": "BSD-3-Clause",
+    "type": "silverstripe-module",
+    "require": {
+    	"silverstripe/framework": "^3.1",
+        "dynamic/core": "2.0.x-dev",
+        "silverstripe/timepickerfield": "^1.0"
+    },
+    "authors": [
+        {
+            "name": "Dynamic, Inc.",
+            "homepage": "http://dynamicagency.com"
+        }
+    ],
+	"extra": {
+		"installer-name": "core-events"
+	}
+}
