@@ -1,3 +1,6 @@
 ---
 Name: Core Events
 ---
+NewsGroupPage:
+  extendsions:
+    - NewsGroupPageDataExtension
