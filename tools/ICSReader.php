@@ -1,4 +1,5 @@
 <?php
+
 /**
  * A very simple unassuming ICS parser.
  *
@@ -38,18 +39,29 @@ class ICSReader
     /**
      * Constructor
      *
-     * @param   string  Path to file to be parsed
+     * @param   string $source Path to file to be parsed
      * @access  public
+     *
      */
     function ICSReader($source)
     {
-        $source = file_get_contents($source);
-        $source = preg_split('/\n([A-Z\-]+\;?[^\:]*\:.+)/', $source, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
 
-        $this->_source = array_map('trim', $source);
+        $file_headers = @get_headers($source);
+        if ($file_headers[0] == 'HTTP/1.1 404 Not Found') {
+            $this->_source = array();
+            $this->_data['meta'] = $this->_parseMeta();
+            $this->_data['events'] = $this->_parseEvents();
+        } else {
+            $source = file_get_contents($source);
+            $source = preg_split('/\n([A-Z\-]+\;?[^\:]*\:.+)/', $source, -1,
+                PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
-        $this->_data['meta'] = $this->_parseMeta();
-        $this->_data['events'] = $this->_parseEvents();
+            $this->_source = array_map('trim', $source);
+
+            $this->_data['meta'] = $this->_parseMeta();
+            $this->_data['events'] = $this->_parseEvents();
+        }
+
     }
 
     /**
@@ -127,8 +139,8 @@ class ICSReader
         while (isset($this->_source[$i])) {
             $line = $this->_source[$i];
             @list($key, $value) = explode(':', $line, 2);
-	    // drop unnecessary key params
-	    $key = preg_replace('/\;.*$/', '', $key);
+            // drop unnecessary key params
+            $key = preg_replace('/\;.*$/', '', $key);
 
             // Event information
             $events[$j++] = $this->_parseEvent();
@@ -164,28 +176,28 @@ class ICSReader
             $line = $this->_source[$i];
             //echo "line is $line <br />";
             @list($key, $value) = explode(':', $line, 2);
-	    // drop unnecessary key params
-	    $key = preg_replace('/\;.*$/', '', $key);
+            // drop unnecessary key params
+            $key = preg_replace('/\;.*$/', '', $key);
 
             // Event information
             if ($key === 'DESCRIPTION') {
                 $value = str_replace(
-                            array("\r\n", '\n', ',', ';'),
-                            array('', "\n", ',', ';'),
-                            $value);
+                    array("\r\n", '\n', ',', ';'),
+                    array('', "\n", ',', ';'),
+                    $value);
             }
             $event[$key] = $value;
             $i++;
-	    // if the next line doesn't start with at least 3 capitals or dashes,
-	    //   merge it into this, since it's probably the other half of a description/location
-	    if ( !preg_match('/^[A-Z\-]{3}/', $this->_source[$i]) ) {
+            // if the next line doesn't start with at least 3 capitals or dashes,
+            //   merge it into this, since it's probably the other half of a description/location
+            if (!preg_match('/^[A-Z\-]{3}/', $this->_source[$i])) {
                 $addon = str_replace(
-                            array("\r\n", '\n', '\,', '\;'),
-                            array('', "\n", ',', ';'),
-                            $this->_source[$i]);
-		$event[$key] .= $addon;
-		$i++;
-	    }
+                    array("\r\n", '\n', '\,', '\;'),
+                    array('', "\n", ',', ';'),
+                    $this->_source[$i]);
+                $event[$key] .= $addon;
+                $i++;
+            }
 
             // Check next line for EOE
             if ($this->_source[$i] === 'END:VEVENT') {
@@ -198,4 +210,5 @@ class ICSReader
         return false;
     }
 }
+
 ?>
