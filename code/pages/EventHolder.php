@@ -1,6 +1,6 @@
 <?php
 
-class EventHolder extends HolderPage
+class EventHolder extends HolderPage implements PermissionProvider
 {
     public static $item_class = 'EventPage';
     private static $allowed_children = array('EventPage');
