@@ -45,65 +45,56 @@ class EventHolder extends HolderPage implements PermissionProvider
 
     public function getFeedEvents($start_date = null, $end_date = null)
     {
-        $start = sfDate::getInstance(strtotime('now'));
-        $end_date = $this->buildEndDate($start);
-
+        $start = ($start_date !== null) ? $start_date : new DateTime($start_date);
         // single day views don't pass end dates
-        if ($end_date) {
-            $end = sfDate::getInstance($end_date);
-        } else {
-            $end = false;
-        }
+        $end = ($end_date !== null) ? $this->buildEndDate($end_date) : $this->buildEndDate();
 
-        $feedevents = new ArrayList();
-        $feedreader = new ICSReader($this->ICSFeed);
-        $events = $feedreader->getEvents();
+        $feedReader = new ICSReader($this->ICSFeed);
+        $events = $feedReader->getEvents();
+        $feedEvents = new ArrayList();
         foreach ($events as $event) {
             // translate iCal schema into CalendarAnnouncement schema (datetime + title/content)
-            $feedevent = new EventPage();
-            $feedevent->Title = $event['SUMMARY'];
+            $feedEvent = new EventPage();
+            //pass ICS feed ID to event list
+            $feedEvent->Title = $event['SUMMARY'];
             if (isset($event['DESCRIPTION'])) {
-                $feedevent->Content = $event['DESCRIPTION'];
+                $feedEvent->Content = $event['DESCRIPTION'];
             }
-
-            $startdatetime = $this->iCalDateToDateTime($event['DTSTART']);
-            $enddatetime = $this->iCalDateToDateTime($event['DTEND']);
-
-            if (($end !== false) && (($startdatetime->get() < $start->get() && $enddatetime->get() < $start->get())
-                    || $startdatetime->get() > $end->get() && $enddatetime->get() > $end->get())
+            $startDateTime = $this->iCalDateToDateTime($event['DTSTART']);
+            $endDateTime = $this->iCalDateToDateTime($event['DTEND']);
+            if (($end != false) && (($startDateTime < $start && $endDateTime < $start)
+                    || $startDateTime > $end && $endDateTime > $end)
             ) {
                 // do nothing; dates outside range
             } else {
-                if ($startdatetime->get() > $start->get()) {
-                    $feedevent->Date = $startdatetime->format('Y-m-d');
-                    $feedevent->Time = $startdatetime->format('H:i:s');
-
-                    $feedevent->EndDate = $enddatetime->format('Y-m-d');
-                    $feedevent->EndTime = $enddatetime->format('H:i:s');
-
-                    $feedevents->push($feedevent);
+                if ($startDateTime->getTimestamp() >= $start->getTimestamp()) {
+                    $feedEvent->Date = $startDateTime->format('Y-m-d');
+                    $feedEvent->Time = $startDateTime->format('H:i:s');
+                    $feedEvent->EndDate = $endDateTime->format('Y-m-d');
+                    $feedEvent->EndTime = $endDateTime->format('H:i:s');
+                    $feedEvents->push($feedEvent);
                 }
             }
         }
-
-        return $feedevents;
+        return $feedEvents;
     }
 
     public function iCalDateToDateTime($date)
     {
-        date_default_timezone_set($this->stat('timezone'));
-        $date = str_replace('T', '', $date);//remove T
-        $date = str_replace('Z', '', $date);//remove Z
-        $date = strtotime($date);
-        $date = (!date('I', $date)) ? strtotime('- 1 hour', $date) : $date;
-        $date = $date + date('Z');
-        return sfDate::getInstance($date);
+        $dt = new DateTime($date);
+        $dt->setTimezone(new DateTimeZone($this->stat('timezone')));
+
+        return $dt;
     }
 
     public function buildEndDate($start = null)
     {
         if ($start === null) {
-            $start = sfDate::getInstance(strtotime('now'));
+            $start = new DateTime();
+        }
+
+        if ($start instanceof DateTime) {
+            $start = $start->getTimestamp();
         }
 
         switch ($this->RangeToShow) {
@@ -111,13 +102,13 @@ class EventHolder extends HolderPage implements PermissionProvider
                 $end_date = $start;
                 break;
             case 'Year':
-                $end_date = date('Y-m-d', strtotime(date('Y-m-d', time()) . ' + 365 day'));
+                $end_date = date('Y-m-d', strtotime($start . ' + 365 day'));
                 break;
             case 'All Upcoming':
                 $end_date = false;
                 break;
             default:
-                $end_date = date('Y-m-d', strtotime(date('Y-m-d', time()) . ' + 1 month'));
+                $end_date = date('Y-m-d', strtotime($start . ' + 1 month'));
                 break;
         }
 
