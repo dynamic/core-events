@@ -5,8 +5,8 @@
     "license": "BSD-3-Clause",
     "type": "silverstripe-module",
     "require": {
-    	"silverstripe/framework": "^3.1",
-        "dynamic/core": "^2.0",
+    	"silverstripe/framework": "^3.2",
+        "dynamic/core": "^3.0",
         "silverstripe/timepickerfield": "^1.0"
     },
     "authors": [
@@ -18,7 +18,7 @@
     "extra": {
         "installer-name": "core-events",
 	"branch-alias": {
-	    "dev-master": "1.0.x-dev"
+	    "dev-master": "2.0.x-dev"
         }
     }
 }
