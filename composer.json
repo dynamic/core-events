@@ -15,7 +15,10 @@
             "homepage": "http://dynamicagency.com"
         }
     ],
-	"extra": {
-		"installer-name": "core-events"
-	}
+    "extra": {
+        "installer-name": "core-events",
+	"branch-alias": {
+	    "dev-master": "1.0.x-dev"
+        }
+    }
 }
