@@ -41,7 +41,7 @@ class ICSReader
      * @param   string  Path to file to be parsed
      * @access  public
      */
-    function ICSReader($source)
+    function __construct($source)
     {
         $source = file_get_contents($source);
         $source = preg_split('/\n([A-Z\-]+\;?[^\:]*\:.+)/', $source, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
