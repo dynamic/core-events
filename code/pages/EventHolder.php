@@ -1,23 +1,63 @@
 <?php
 
+use ICal\ICal;
+
+/**
+ * Class EventHolder
+ *
+ * @property string $ICSFeed
+ * @property int $EventsPerPage
+ * @property string $RangeToShow
+ */
 class EventHolder extends HolderPage implements PermissionProvider
 {
+
+    /**
+     * @var string
+     */
     public static $item_class = 'EventPage';
+
+    /**
+     * @var array
+     */
     private static $allowed_children = array('EventPage');
+
+    /**
+     * @var string
+     */
     private static $singular_name = 'Event Holder';
+
+    /**
+     * @var string
+     */
     private static $plural_name = 'Events Holder';
+
+    /**
+     * @var string
+     */
     private static $description = 'Page holding events, displays child pages that are events';
 
+    /**
+     * @var string
+     */
     private static $timezone = 'America/Chicago';
 
+    /**
+     * @var array
+     */
     private static $db = array(
-        'ICSFeed' => 'Varchar(255)',
+        'ICSFeed'       => 'Varchar(255)',
         'EventsPerPage' => 'Int',
         //0 == All
-        'RangeToShow' => 'Enum("Month,Year,All Upcoming","Month")',
+        'RangeToShow'   => 'Enum("Month,Year,All Upcoming","Month")',
         //TODO add day option, bug in getFeedEvents date logic
     );
 
+    private $event_data;
+
+    /**
+     * @return FieldList
+     */
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
@@ -43,42 +83,81 @@ class EventHolder extends HolderPage implements PermissionProvider
         return $fields;
     }
 
+    /**
+     * @return $this
+     */
+    public function setEventData()
+    {
+        $parser = new ICal();
+        $parser->initUrl($this->ICSFeed);
+
+        $this->event_data = $parser;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEventData()
+    {
+        if (!$this->event_data) {
+            $this->setEventData();
+        }
+
+        return $this->event_data;
+    }
+
+    /**
+     * @return Generator
+     */
+    protected function iterateEvents()
+    {
+        foreach ($this->getEventData()->eventsFromRange() as $data) {
+            yield $data;
+        }
+    }
+
+    /**
+     * @param null $start_date
+     * @param null $end_date
+     *
+     * @return ArrayList
+     */
     public function getFeedEvents($start_date = null, $end_date = null)
     {
         $start = ($start_date !== null) ? $start_date : new DateTime($start_date);
         // single day views don't pass end dates
-        $end = ($end_date !== null) ? $this->buildEndDate($end_date) : $this->buildEndDate();
+        $end = ($end_date !== null) ? $this->buildEndDate($end_date) : $this->buildEndDate($start);
 
-        $feedReader = new ICSReader($this->ICSFeed);
-        $events = $feedReader->getEvents();
+        $parser = $this->getEventData();
+
         $feedEvents = new ArrayList();
-        foreach ($events as $event) {
+        foreach ($this->iterateEvents() as $event) {
             // translate iCal schema into CalendarAnnouncement schema (datetime + title/content)
             $feedEvent = new EventPage();
             //pass ICS feed ID to event list
-            $feedEvent->Title = $event['SUMMARY'];
-            if (isset($event['DESCRIPTION'])) {
-                $feedEvent->Content = $event['DESCRIPTION'];
+            $feedEvent->Title = $event->summary;
+            if ($event->description != null) {
+                $feedEvent->Content = $event->description;
             }
-            $startDateTime = $this->iCalDateToDateTime($event['DTSTART']);
-            $endDateTime = $this->iCalDateToDateTime($event['DTEND']);
-            if (($end != false) && (($startDateTime < $start && $endDateTime < $start)
-                    || $startDateTime > $end && $endDateTime > $end)
-            ) {
-                // do nothing; dates outside range
-            } else {
-                if ($startDateTime->getTimestamp() >= $start->getTimestamp()) {
-                    $feedEvent->Date = $startDateTime->format('Y-m-d');
-                    $feedEvent->Time = $startDateTime->format('H:i:s');
-                    $feedEvent->EndDate = $endDateTime->format('Y-m-d');
-                    $feedEvent->EndTime = $endDateTime->format('H:i:s');
-                    $feedEvents->push($feedEvent);
-                }
-            }
+            $startDateTime = $parser->iCalDateToDateTime($event->dtstart);
+            $endDateTime = $parser->iCalDateToDateTime($event->dtend);
+            $feedEvent->Date = $startDateTime->format('Y-m-d');
+            $feedEvent->Time = $startDateTime->format('H:i:s');
+            $feedEvent->EndDate = $endDateTime->format('Y-m-d');
+            $feedEvent->EndTime = $endDateTime->format('H:i:s');
+            $feedEvents->push($feedEvent);
         }
+
         return $feedEvents;
     }
 
+    /**
+     * @param $date
+     *
+     * @return DateTime
+     */
     public function iCalDateToDateTime($date)
     {
         $dt = new DateTime($date);
@@ -87,6 +166,11 @@ class EventHolder extends HolderPage implements PermissionProvider
         return $dt;
     }
 
+    /**
+     * @param null $start
+     *
+     * @return bool|DateTime|false|int|null|string
+     */
     public function buildEndDate($start = null)
     {
         if ($start === null) {
@@ -115,6 +199,12 @@ class EventHolder extends HolderPage implements PermissionProvider
         return $end_date;
     }
 
+    /**
+     * @param array $filter
+     * @param int $limit
+     *
+     * @return DataList
+     */
     public static function getUpcomingEvents($filter = array(), $limit = 10)
     {
         $filter['Date:GreaterThanOrEqual'] = date('Y-m-d', strtotime('now'));
@@ -132,6 +222,12 @@ class EventHolder extends HolderPage implements PermissionProvider
         return $events;
     }
 
+    /**
+     * @param null $filter
+     * @param int $limit
+     *
+     * @return ArrayList
+     */
     public function getEvents($filter = null, $limit = 10)
     {
         $eventList = ArrayList::create();
@@ -145,13 +241,16 @@ class EventHolder extends HolderPage implements PermissionProvider
         return $eventList;
     }
 
+    /**
+     * @return DataList
+     */
     public function getItemsShort()
     {
         return EventPage::get()
             ->limit(3)
             ->filter(array(
                 'Date:LessThan:Not' => date('Y-m-d', strtotime('now')),
-                'ParentID' => $this->ID,
+                'ParentID'          => $this->ID,
             ))
             ->sort('Date', 'ASC');
     }
@@ -166,21 +265,39 @@ class EventHolder extends HolderPage implements PermissionProvider
         return parent::canView($member = null);
     }
 
+    /**
+     * @param null $member
+     *
+     * @return bool|int
+     */
     public function canEdit($member = null)
     {
         return Permission::check('EventHolder_CRUD');
     }
 
+    /**
+     * @param null $member
+     *
+     * @return bool|int
+     */
     public function canDelete($member = null)
     {
         return Permission::check('EventHolder_CRUD');
     }
 
+    /**
+     * @param null $member
+     *
+     * @return bool|int
+     */
     public function canCreate($member = null)
     {
         return Permission::check('EventHolder_CRUD');
     }
 
+    /**
+     * @return array
+     */
     public function providePermissions()
     {
         return array(
@@ -188,19 +305,36 @@ class EventHolder extends HolderPage implements PermissionProvider
             'EventHolder_CRUD' => 'Create, Update and Delete an Event Holder Page',
         );
     }
+
 }
 
+/**
+ * Class EventHolder_Controller
+ */
 class EventHolder_Controller extends HolderPage_Controller
 {
+
+    /**
+     *
+     */
     public function init()
     {
         parent::init();
     }
 
+    /**
+     * @var array
+     */
     private static $allowed_actions = array(
         'tag',
     );
 
+    /**
+     * @param array $filter
+     * @param int $pageSize
+     *
+     * @return PaginatedList
+     */
     public function Items($filter = array(), $pageSize = 10)
     {
         $filter['ParentID'] = $this->Data()->ID;
@@ -214,6 +348,9 @@ class EventHolder_Controller extends HolderPage_Controller
         return $list;
     }
 
+    /**
+     * @return PaginatedList|ViewableData_Customised
+     */
     public function tag()
     {
         $request = $this->request;
@@ -224,13 +361,18 @@ class EventHolder_Controller extends HolderPage_Controller
 
             return $this->customise(array(
                 'Message' => 'showing entries tagged "' . $tag . '"',
-                'Items' => $this->Items($filter),
+                'Items'   => $this->Items($filter),
             ));
         }
 
         return $this->Items();
     }
 
+    /**
+     * @param array $filter
+     *
+     * @return mixed
+     */
     public function getUpcomingEvents($filter = array())
     {
         $pageSize = ($this->data()->EventsPerPage == 0) ? 10 : $this->data()->EventsPerPage;
@@ -247,4 +389,5 @@ class EventHolder_Controller extends HolderPage_Controller
             'Time' => 'ASC',
         ));
     }
+
 }

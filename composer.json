@@ -7,7 +7,8 @@
     "require": {
     	"silverstripe/framework": "^3.2",
         "dynamic/core": "^3.0",
-        "silverstripe/timepickerfield": "^1.0"
+        "silverstripe/timepickerfield": "^1.0",
+        "johngrogg/ics-parser": "^v2.0"
     },
     "authors": [
         {
