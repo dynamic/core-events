@@ -88,7 +88,10 @@ class EventHolder extends HolderPage implements PermissionProvider
      */
     public function setEventData()
     {
-        $parser = new ICal();
+        $parser = new ICal(false, [
+            'defaultTimeZone' => 'America/Chicago',
+            'useTimeZoneWithRRules' => true,
+        ]);
         $parser->initUrl($this->ICSFeed);
 
         $this->event_data = $parser;
@@ -141,8 +144,8 @@ class EventHolder extends HolderPage implements PermissionProvider
             if ($event->description != null) {
                 $feedEvent->Content = $event->description;
             }
-            $startDateTime = $parser->iCalDateToDateTime($event->dtstart);
-            $endDateTime = $parser->iCalDateToDateTime($event->dtend);
+            $startDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtstart, true)->format('Y-m-d H:i:s'));
+            $endDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtend, true)->format('Y-m-d H:i:s'));
             $feedEvent->Date = $startDateTime->format('Y-m-d');
             $feedEvent->Time = $startDateTime->format('H:i:s');
             $feedEvent->EndDate = $endDateTime->format('Y-m-d');
