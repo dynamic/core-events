@@ -84,14 +84,19 @@ class EventHolder extends HolderPage implements PermissionProvider
     }
 
     /**
+     * @param int $limit the number of weeks to fetch
+     *
      * @return $this
      */
-    public function setEventData()
+    public function setEventData($limit = 0)
     {
         $parser = new ICal(false, [
-            'defaultTimeZone' => 'America/Chicago',
+            'defaultTimeZone'       => 'America/Chicago',
             'useTimeZoneWithRRules' => true,
         ]);
+        if ($limit > 0) {
+            $parser->eventsFromInterval($limit);
+        }
         $parser->initUrl($this->ICSFeed);
 
         $this->event_data = $parser;
@@ -100,12 +105,14 @@ class EventHolder extends HolderPage implements PermissionProvider
     }
 
     /**
+     * @param int $limit the number of weeks to fetch
+     *
      * @return mixed
      */
-    public function getEventData()
+    public function getEventData($limit = 0)
     {
         if (!$this->event_data) {
-            $this->setEventData();
+            $this->setEventData($limit);
         }
 
         return $this->event_data;
@@ -124,16 +131,17 @@ class EventHolder extends HolderPage implements PermissionProvider
     /**
      * @param null $start_date
      * @param null $end_date
+     * @param int $icsWeeks
      *
      * @return ArrayList
      */
-    public function getFeedEvents($start_date = null, $end_date = null)
+    public function getFeedEvents($start_date = null, $end_date = null, $icsWeeks = 0)
     {
         $start = ($start_date !== null) ? $start_date : new DateTime($start_date);
         // single day views don't pass end dates
         $end = ($end_date !== null) ? $this->buildEndDate($end_date) : $this->buildEndDate($start);
 
-        $parser = $this->getEventData();
+        $parser = $this->getEventData($icsWeeks);
 
         $feedEvents = new ArrayList();
         foreach ($this->iterateEvents() as $event) {
@@ -144,8 +152,10 @@ class EventHolder extends HolderPage implements PermissionProvider
             if ($event->description != null) {
                 $feedEvent->Content = $event->description;
             }
-            $startDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtstart, true)->format('Y-m-d H:i:s'));
-            $endDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtend, true)->format('Y-m-d H:i:s'));
+            $startDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtstart,
+                true)->format('Y-m-d H:i:s'));
+            $endDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtend,
+                true)->format('Y-m-d H:i:s'));
             $feedEvent->Date = $startDateTime->format('Y-m-d');
             $feedEvent->Time = $startDateTime->format('H:i:s');
             $feedEvent->EndDate = $endDateTime->format('Y-m-d');
@@ -228,16 +238,17 @@ class EventHolder extends HolderPage implements PermissionProvider
     /**
      * @param null $filter
      * @param int $limit
+     * @param int $icsWeeks
      *
      * @return ArrayList
      */
-    public function getEvents($filter = null, $limit = 10)
+    public function getEvents($filter = null, $limit = 10, $icsWeeks = 0)
     {
         $eventList = ArrayList::create();
         $events = self::getUpcomingEvents($filter, $limit);
         $eventList->merge($events);
         if ($this->ICSFeed) {
-            $icsEvents = $this->getFeedEvents();
+            $icsEvents = $this->getFeedEvents(null, null, $icsWeeks);
             $eventList->merge($icsEvents);
         }
 
