@@ -152,10 +152,10 @@ class EventHolder extends HolderPage implements PermissionProvider
             if ($event->description != null) {
                 $feedEvent->Content = $event->description;
             }
-            $startDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtstart,
-                true)->format('Y-m-d H:i:s'));
-            $endDateTime = $this->iCalDateToDateTime($parser->iCalDateToDateTime($event->dtend,
-                true)->format('Y-m-d H:i:s'));
+            $startDateTime = $parser->iCalDateToDateTime($event->dtstart,
+                true, true);
+            $endDateTime = $parser->iCalDateToDateTime($event->dtend,
+                true, true);
             $feedEvent->Date = $startDateTime->format('Y-m-d');
             $feedEvent->Time = $startDateTime->format('H:i:s');
             $feedEvent->EndDate = $endDateTime->format('Y-m-d');
@@ -164,19 +164,6 @@ class EventHolder extends HolderPage implements PermissionProvider
         }
 
         return $feedEvents;
-    }
-
-    /**
-     * @param $date
-     *
-     * @return DateTime
-     */
-    public function iCalDateToDateTime($date)
-    {
-        $dt = new DateTime($date);
-        $dt->setTimezone(new DateTimeZone($this->stat('timezone')));
-
-        return $dt;
     }
 
     /**
