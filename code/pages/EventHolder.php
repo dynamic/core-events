@@ -186,13 +186,13 @@ class EventHolder extends HolderPage implements PermissionProvider
                 $end_date = $start;
                 break;
             case 'Year':
-                $end_date = date('Y-m-d', strtotime($start . ' + 365 day'));
+                $end_date = date('Y-m-d', strtotime('+ 365 day', $start));
                 break;
             case 'All Upcoming':
                 $end_date = false;
                 break;
             default:
-                $end_date = date('Y-m-d', strtotime($start . ' + 1 month'));
+                $end_date = date('Y-m-d', strtotime('+ 1 month', $start));
                 break;
         }
 
