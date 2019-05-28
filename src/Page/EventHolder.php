@@ -1,6 +1,20 @@
 <?php
 
+namespace Dynamic\CoreEvents\Page;
+
 use ICal\ICal;
+use DateTime;
+use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\NumericField;
+use SilverStripe\ORM\ArrayList;
+use SilverStripe\ORM\FieldType\DBDate;
+use SilverStripe\Security\Permission;
+use Dynamic\Core\Page\HolderPage;
+use SilverStripe\Security\PermissionProvider;
+use SilverStripe\ORM\PaginatedList;
+use SilverStripe\Core\Convert;
+use Dynamic\Core\Page\HolderPageController;
 
 /**
  * Class EventHolder
@@ -15,12 +29,12 @@ class EventHolder extends HolderPage implements PermissionProvider
     /**
      * @var string
      */
-    public static $item_class = 'EventPage';
+    private static $item_class = EventPage::class;
 
     /**
      * @var array
      */
-    private static $allowed_children = array('EventPage');
+    private static $allowed_children = array(EventPage::class);
 
     /**
      * @var string
@@ -36,6 +50,8 @@ class EventHolder extends HolderPage implements PermissionProvider
      * @var string
      */
     private static $description = 'Page holding events, displays child pages that are events';
+
+    private static $table_name = 'EventHolder';
 
     /**
      * @var string
@@ -68,7 +84,7 @@ class EventHolder extends HolderPage implements PermissionProvider
             DropdownField::create(
                 'RangeToShow',
                 'Range to show',
-                singleton('EventHolder')->dbObject('RangeToShow')->enumValues()
+                singleton(EventHolder::class)->dbObject('RangeToShow')->enumValues()
             ),
             'Content'
         );
@@ -261,7 +277,7 @@ class EventHolder extends HolderPage implements PermissionProvider
      *
      * @return bool
      */
-    public function canView($member = null)
+    public function canView($member = null, $context = [])
     {
         return parent::canView($member = null);
     }
@@ -271,7 +287,7 @@ class EventHolder extends HolderPage implements PermissionProvider
      *
      * @return bool|int
      */
-    public function canEdit($member = null)
+    public function canEdit($member = null, $context = [])
     {
         return Permission::check('EventHolder_CRUD');
     }
@@ -281,7 +297,7 @@ class EventHolder extends HolderPage implements PermissionProvider
      *
      * @return bool|int
      */
-    public function canDelete($member = null)
+    public function canDelete($member = null, $context = [])
     {
         return Permission::check('EventHolder_CRUD');
     }
@@ -291,7 +307,7 @@ class EventHolder extends HolderPage implements PermissionProvider
      *
      * @return bool|int
      */
-    public function canCreate($member = null)
+    public function canCreate($member = null, $context = [])
     {
         return Permission::check('EventHolder_CRUD');
     }
@@ -305,90 +321,6 @@ class EventHolder extends HolderPage implements PermissionProvider
             //'Location_VIEW' => 'Read a Location',
             'EventHolder_CRUD' => 'Create, Update and Delete an Event Holder Page',
         );
-    }
-
-}
-
-/**
- * Class EventHolder_Controller
- */
-class EventHolder_Controller extends HolderPage_Controller
-{
-
-    /**
-     *
-     */
-    public function init()
-    {
-        parent::init();
-    }
-
-    /**
-     * @var array
-     */
-    private static $allowed_actions = array(
-        'tag',
-    );
-
-    /**
-     * @param array $filter
-     * @param int $pageSize
-     *
-     * @return PaginatedList
-     */
-    public function Items($filter = array(), $pageSize = 10)
-    {
-        $filter['ParentID'] = $this->Data()->ID;
-        $class = $this->Data()->stat('item_class');
-
-        $items = $this->getUpcomingEvents($filter);
-
-        $list = PaginatedList::create($items, $this->request);
-        $list->setPageLength($pageSize);
-
-        return $list;
-    }
-
-    /**
-     * @return PaginatedList|ViewableData_Customised
-     */
-    public function tag()
-    {
-        $request = $this->request;
-        $params = $request->allParams();
-
-        if ($tag = Convert::raw2sql(urldecode($params['ID']))) {
-            $filter = array('Tags.Title' => $tag);
-
-            return $this->customise(array(
-                'Message' => 'showing entries tagged "' . $tag . '"',
-                'Items'   => $this->Items($filter),
-            ));
-        }
-
-        return $this->Items();
-    }
-
-    /**
-     * @param array $filter
-     *
-     * @return mixed
-     */
-    public function getUpcomingEvents($filter = array())
-    {
-        $pageSize = ($this->data()->EventsPerPage == 0) ? 10 : $this->data()->EventsPerPage;
-
-        $filter['EndDate:GreaterThanOrEqual'] = date('Y-m-d', strtotime('now'));
-        if ($this->data()->RangeToShow != 'All Upcoming') {
-            $end_date = $this->data()->buildEndDate();
-            $filter['Date:LessThanOrEqual'] = $end_date;
-        }
-        $items = $this->data()->getEvents($filter, 0);
-
-        return $items->sort(array(
-            'Date' => 'ASC',
-            'Time' => 'ASC',
-        ));
     }
 
 }

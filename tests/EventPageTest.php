@@ -1,5 +1,10 @@
 <?php
 
+use Dynamic\CoreEvents\Page\EventHolder;
+use Dynamic\CoreEvents\Page\EventPage;
+use SilverStripe\ORM\DB;
+use Dynamic\Core\Test\DC_Test;
+
 class EventPageTest extends DC_Test{
 
     protected static $use_draft_site = true;
@@ -15,7 +20,7 @@ class EventPageTest extends DC_Test{
     function testEventPageCreation(){
 
         $this->logInWithPermission('Event_CRUD');
-        $page = singleton('EventPage');
+        $page = singleton(EventPage::class);
         $this->assertTrue($page->canCreate());
 
         $event = new EventPage();

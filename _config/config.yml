@@ -1,6 +1,6 @@
 ---
 Name: Core Events
 ---
-NewsGroupPage:
+Dynamic\Core\Page\NewsGroupPage:
   extendsions:
-    - NewsGroupPageDataExtension
+    - Dynamic\CoreEvents\Extension\NewsGroupPageDataExtension

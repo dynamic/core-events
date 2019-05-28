@@ -1,0 +1,6 @@
+mappings:
+  NewsGroupPageDataExtension: Dynamic\CoreEvents\Extension\NewsGroupPageDataExtension
+  EventPage: Dynamic\CoreEvents\Page\EventPage
+  EventPage_Controller: Dynamic\CoreEvents\Page\EventPage_Controller
+  EventHolder: Dynamic\CoreEvents\Page\EventHolder
+  EventHolder_Controller: Dynamic\CoreEvents\Page\EventHolder_Controller
