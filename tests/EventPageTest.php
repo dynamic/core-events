@@ -66,7 +66,7 @@ class EventPageTest extends CE_Test {
         $event->delete();
         $this->assertTrue(!$event->isPublished());
 
-        $versions = DB::query('Select * FROM "EventPage_versions" WHERE "RecordID" = '. $eventID);
+        $versions = DB::query('Select * FROM "EventPage_Versions" WHERE "RecordID" = '. $eventID);
         $versionsPostDelete = array();
         foreach($versions as $versionRow) $versionsPostDelete[] = $versionRow;
 
