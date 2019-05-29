@@ -2,10 +2,10 @@
 
 use Dynamic\CoreEvents\Page\EventHolder;
 use Dynamic\CoreEvents\Page\EventPage;
+use Dynamic\CoreEvents\Test\DC_Test;
 use SilverStripe\ORM\DB;
-use Dynamic\Core\Test\DC_Test;
 
-class EventPageTest extends DC_Test{
+class EventPageTest extends DC_Test {
 
     protected static $use_draft_site = true;
 
@@ -14,7 +14,8 @@ class EventPageTest extends DC_Test{
 
         $holder = EventHolder::create();
         $holder->Title = "Events";
-        $holder->doPublish();
+        $holder->write();
+        $holder->publishRecursive();
     }
 
     function testEventPageCreation(){
@@ -28,7 +29,8 @@ class EventPageTest extends DC_Test{
         $event->Title = 'Our First Event';
         $event->Date = date('Y-m-d', strtotime('Next Thursday'));
         $event->Time = date('H:i:s', strtotime('5:30 pm'));
-        $event->doPublish();
+        $event->write();
+        $event->publishRecursive();
         $eventID = $event->ID;
 
         $this->assertTrue($eventID == EventPage::get()->first()->ID);
@@ -46,7 +48,8 @@ class EventPageTest extends DC_Test{
         $event->Title = 'Our First Event';
         $event->Date = date('Y-m-d', strtotime('Next Thursday'));
         $event->Time = date('H:i:s', strtotime('5:30 pm'));
-        $event->doPublish();
+        $event->write();
+        $event->publishRecursive();
         $eventID = $event->ID;
 
         $this->assertTrue($event->isPublished());
@@ -59,6 +62,7 @@ class EventPageTest extends DC_Test{
         $this->logInWithPermission('Event_CRUD');
         $this->assertTrue($event->canDelete());
 
+        $event->doUnpublish();
         $event->delete();
         $this->assertTrue(!$event->isPublished());
 

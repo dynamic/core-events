@@ -1,0 +1,65 @@
+SilverStripe\Security\Group:
+  administrators:
+    Title: Administrators
+SilverStripe\Security\Permission:
+  administrators:
+    Code: ADMIN
+    Type: 1
+    Group: =>SilverStripe\Security\Group.administrators
+SilverStripe\Security\Member:
+  admin:
+    FirstName: Default
+    Surname: Admin
+    Email: admin@dynamicagency.com
+    Groups: =>SilverStripe\Security\Group.administrators
+  default:
+    FirstName: Default
+    Surname: User
+    Email: user@dynamicagency.com
+Dynamic\Core\Page\DetailPage:
+  page1:
+    Title: Detail 1
+    URLSegment: detail-1
+  page2:
+    Title: About Us
+    URLSegment: about-us
+Dynamic\Core\Page\BasicPage:
+  basic1:
+    Title: Basic Page 1
+  basic2:
+    Title: Another Basic Page
+Dynamic\Core\Page\ContactPage:
+  contact1:
+    Title: Contact Page 1
+  contact2:
+    Title: Another Contact Page
+Dynamic\Core\Page\DynamicHomePage:
+  newhome1:
+    Title: Dynamic Home Page
+  newhome2:
+    Title: Yet Another Instance
+Dynamic\Core\Page\FormPage:
+  form1:
+    Title: Form Page 1
+  form2:
+    Title: Another Form Page
+Dynamic\Core\Page\LandingPage:
+  default:
+    Title: 'Landing Page'
+Dynamic\Core\Page\NewsArticle:
+  article1:
+    Title: "News Article One"
+  article2:
+    Title: "News Article Two"
+Dynamic\Core\Model\LinkObject:
+  default:
+    Name: "Link One"
+Dynamic\Core\Model\Spiff:
+  default:
+    Name: "Spiff One"
+Dynamic\Core\Model\Tag:
+  default:
+    Name: "Tag One"
+Dynamic\Core\Page\CollectionPage:
+  default:
+    Title: "Collection Page"

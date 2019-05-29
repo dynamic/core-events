@@ -11,6 +11,7 @@
   "license": "BSD-3-Clause",
   "type": "silverstripe-vendormodule",
   "require": {
+    "dynamic/core": "^4.0",
     "silverstripe/recipe-cms": "^4.0",
     "silverstripe/timepickerfield": "dev-master",
     "johngrogg/ics-parser": "^v2.0"
@@ -26,10 +27,22 @@
   },
   "authors": [
     {
-      "name": "Dynamic, Inc.",
-      "homepage": "http://dynamicagency.com"
+      "name": "Dynamic",
+      "homepage": "http://www.dynamicagency.com",
+      "email": "dev@dynamicagency.com"
     }
   ],
+  "config": {
+    "process-timeout": 600
+  },
+  "autoload": {
+    "psr-4": {
+      "Dynamic\\Core\\": "src/",
+      "Dynamic\\Core\\Test\\": "tests/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
   "extra": {
     "installer-name": "core-events",
     "branch-alias": {
