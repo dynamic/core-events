@@ -54,7 +54,7 @@ class EventPageTest extends CE_Test {
 
         $this->assertTrue($event->isPublished());
 
-        $versions = DB::query('Select * FROM "EventPage_versions" WHERE "RecordID" = '. $eventID);
+        $versions = DB::query('Select * FROM "EventPage_Versions" WHERE "RecordID" = '. $eventID);
         $versionsPostPublish = array();
         foreach($versions as $versionRow) $versionsPostPublish[] = $versionRow;
 
