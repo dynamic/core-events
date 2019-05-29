@@ -2,10 +2,10 @@
 
 use Dynamic\CoreEvents\Page\EventHolder;
 use Dynamic\CoreEvents\Page\EventPage;
-use Dynamic\CoreEvents\Test\DC_Test;
+use Dynamic\CoreEvents\Test\CE_Test;
 use SilverStripe\ORM\DB;
 
-class EventPageTest extends DC_Test {
+class EventPageTest extends CE_Test {
 
     protected static $use_draft_site = true;
 

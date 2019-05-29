@@ -4,10 +4,10 @@ namespace Dynamic\CoreEvents\Test;
 
 use SilverStripe\Dev\FunctionalTest;
 
-class DC_Test extends FunctionalTest
+class CE_Test extends FunctionalTest
 {
 
-    protected static $fixture_file = 'DynamicCoreTest.yml';
+    protected static $fixture_file = 'fixtures.yml';
     protected static $disable_themes = true;
     protected static $use_draft_site = false;
 
