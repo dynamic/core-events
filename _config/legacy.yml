@@ -1,0 +1,7 @@
+---
+Name: core-events-legacy
+---
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    EventPage: Dynamic\CoreEvents\Page\EventPage
+    EventHolder: Dynamic\CoreEvents\Page\EventHolder
