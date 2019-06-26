@@ -148,9 +148,30 @@ class EventHolder extends HolderPage implements PermissionProvider
             // translate iCal schema into CalendarAnnouncement schema (datetime + title/content)
             $feedEvent = new EventPage();
             //pass ICS feed ID to event list
-            $feedEvent->Title = $event->summary;
-            if ($event->description != null) {
-                $feedEvent->Content = $event->description;
+            $feedEvent->Title = $event['SUMMARY'];
+            if (isset($event['DESCRIPTION'])) {
+                $feedEvent->Content = $event['DESCRIPTION'];
+            }
+
+            if (!array_key_exists('DTEND', $event)) {
+                $event['DTEND'] = $event['DTSTART'];
+            }
+
+            $startDateTime = $this->iCalDateToDateTime($event['DTSTART']);
+            $endDateTime = $this->iCalDateToDateTime($event['DTEND']);
+
+            if (($end != false) && (($startDateTime < $start && $endDateTime < $start)
+                    || $startDateTime > $end && $endDateTime > $end)
+            ) {
+                // do nothing; dates outside range
+            } else {
+                if ($startDateTime->getTimestamp() >= $start->getTimestamp()) {
+                    $feedEvent->Date = $startDateTime->format('Y-m-d');
+                    $feedEvent->Time = $startDateTime->format('H:i:s');
+                    $feedEvent->EndDate = $endDateTime->format('Y-m-d');
+                    $feedEvent->EndTime = $endDateTime->format('H:i:s');
+                    $feedEvents->push($feedEvent);
+                }
             }
             $startDateTime = $parser->iCalDateToDateTime($event->dtstart,
                 true, true);

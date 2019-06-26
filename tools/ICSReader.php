@@ -40,13 +40,23 @@ class ICSReader
      *
      * @param   string  Path to file to be parsed
      * @access  public
+     * @throws \Exception
      */
     function __construct($source)
     {
-        $source = file_get_contents($source);
-        $source = preg_split('/\n([A-Z\-]+\;?[^\:]*\:.+)/', $source, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
+        $cache = SS_Cache::factory('eventCalendar');
+        SS_Cache::set_cache_lifetime('eventCalendar', 60*60*3);
 
-        $this->_source = array_map('trim', $source);
+        $cacheName = preg_replace( '/[^a-z0-9]+/', '_', strtolower($source));
+        $result = $cache->load('events_' . $cacheName);
+        if (!$result) {
+            $result = file_get_contents($source);
+            $cache->save($result, 'events_' . $cacheName);
+        }
+
+        $result = preg_split('/\n([A-Z\-]+\;?[^\:]*\:.+)/', $result, -1, PREG_SPLIT_DELIM_CAPTURE|PREG_SPLIT_NO_EMPTY);
+
+        $this->_source = array_map('trim', $result);
 
         $this->_data['meta'] = $this->_parseMeta();
         $this->_data['events'] = $this->_parseEvents();
