@@ -60,8 +60,14 @@ class EventHolder extends HolderPage implements PermissionProvider
             if (isset($event['DESCRIPTION'])) {
                 $feedEvent->Content = $event['DESCRIPTION'];
             }
+
+            if (!array_key_exists('DTEND', $event)) {
+                $event['DTEND'] = $event['DTSTART'];
+            }
+
             $startDateTime = $this->iCalDateToDateTime($event['DTSTART']);
             $endDateTime = $this->iCalDateToDateTime($event['DTEND']);
+
             if (($end != false) && (($startDateTime < $start && $endDateTime < $start)
                     || $startDateTime > $end && $endDateTime > $end)
             ) {
@@ -102,13 +108,13 @@ class EventHolder extends HolderPage implements PermissionProvider
                 $end_date = $start;
                 break;
             case 'Year':
-                $end_date = date('Y-m-d', strtotime($start . ' + 365 day'));
+                $end_date = date('Y-m-d', strtotime('+ 365 day', $start));
                 break;
             case 'All Upcoming':
                 $end_date = false;
                 break;
             default:
-                $end_date = date('Y-m-d', strtotime($start . ' + 1 month'));
+                $end_date = date('Y-m-d', strtotime('+ 1 month', $start));
                 break;
         }
 
