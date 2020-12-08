@@ -4,10 +4,12 @@ namespace Dynamic\CoreEvents\Page;
 
 use SheaDawson\TimePickerField\TimePickerField;
 use SilverStripe\Forms\DateField;
+use SilverStripe\Forms\TimeField;
 use SilverStripe\ORM\FieldType\DBDate;
 use SilverStripe\Security\Permission;
 use Dynamic\Core\Page\DetailPage;
 use SilverStripe\Security\PermissionProvider;
+
 
 class EventPage extends DetailPage implements PermissionProvider{
 
@@ -21,11 +23,7 @@ class EventPage extends DetailPage implements PermissionProvider{
         'Time' => 'Time',
         'EndTime' => 'Time'
     );
-    private static $has_one = array();
-    private static $has_many = array();
-    private static $many_many = array();
-    private static $many_many_extraFields = array();
-    private static $belongs_many_many = array();
+
     private static $defaults = array(
         'ShowInMenus' => 0
     );
@@ -39,8 +37,8 @@ class EventPage extends DetailPage implements PermissionProvider{
 
         $fields->addFieldToTab('Root.EventInformation', DateField::create('Date')->setTitle('Event Start Date'));
         $fields->addFieldToTab('Root.EventInformation', DateField::create('EndDate')->setTitle('Event End Date'));
-        $fields->addFieldToTab('Root.EventInformation', TimePickerField::create('Time')->setTitle('Event Time'));
-        $fields->addFieldToTab('Root.EventInformation', TimePickerField::create('EndTime')->setTitle('Event End Time'));
+        $fields->addFieldToTab('Root.EventInformation', TimeField::create('Time')->setTitle('Event Time'));
+        $fields->addFieldToTab('Root.EventInformation', TimeField::create('EndTime')->setTitle('Event End Time'));//*/
 
         return $fields;
     }
