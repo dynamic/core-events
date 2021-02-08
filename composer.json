@@ -13,7 +13,7 @@
   "require": {
     "dynamic/core": "^4.0",
     "silverstripe/recipe-cms": "^4.0",
-    "silverstripe/timepickerfield": "dev-master",
+    "silverstripe/timepickerfield": "^2.0",
     "johngrogg/ics-parser": "^v2.0"
   },
   "require-dev": {
