@@ -309,7 +309,11 @@ class EventHolder extends HolderPage implements PermissionProvider
      */
     public function canCreate($member = null, $context = [])
     {
-        return Permission::check('EventHolder_CRUD');
+        if ($canCreate = Permission::check('EventHolder_CRUD')) {
+            return parent::canCreate($member, $context);
+        }
+
+        return false;
     }
 
     /**

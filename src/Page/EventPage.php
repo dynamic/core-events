@@ -11,26 +11,50 @@ use Dynamic\Core\Page\DetailPage;
 use SilverStripe\Security\PermissionProvider;
 
 
-class EventPage extends DetailPage implements PermissionProvider{
-
+class EventPage extends DetailPage implements PermissionProvider
+{
+    /**
+     * @var string
+     */
     private static $singular_name = 'Event';
+    
+    /**
+     * @var string
+     */
     private static $plural_name = 'Events';
+
+    /**
+     * @var string
+     */
     private static $description = 'Event page with a Date and Time';
 
-    private static $db = array(
+    /**
+     * @var string[]
+     */
+    private static $db = [
         'Date' => 'Date',
         'EndDate' => 'Date',
         'Time' => 'Time',
-        'EndTime' => 'Time'
-    );
+        'EndTime' => 'Time',
+    ];
 
-    private static $defaults = array(
-        'ShowInMenus' => 0
-    );
+    /**
+     * @var int[]
+     */
+    private static $defaults = [
+        'ShowInMenus' => 0,
+    ];
 
+    /**
+     * @var string
+     */
     private static $table_name = 'EventPage';
 
-    public function getCMSFields(){
+    /**
+     * @return \Dynamic\Core\Page\FieldList
+     */
+    public function getCMSFields()
+    {
         $fields = parent::getCMSFields();
 
         //DateField::set_default_config('showcalendar',true);
@@ -43,23 +67,31 @@ class EventPage extends DetailPage implements PermissionProvider{
         return $fields;
     }
 
-    public function validate(){
+    /**
+     * @return \SilverStripe\ORM\ValidationResult
+     */
+    public function validate()
+    {
         $result = parent::validate();
 
-        if($this->EndTime && ($this->Time > $this->EndTime)){
+        if ($this->EndTime && ($this->Time > $this->EndTime)) {
             return $result->addError('End Time must be later than the Start Time');
         }
 
-        if($this->EndDate && ($this->Date > $this->EndDate)){
+        if ($this->EndDate && ($this->Date > $this->EndDate)) {
             return $result->addError('End Date must be equal to the Start Date or in the future');
         }
 
         return $result;
     }
 
-    public function onBeforeWrite(){
+    /**
+     * @return void
+     */
+    public function onBeforeWrite()
+    {
         parent::onBeforeWrite();
-        if(!$this->EndDate){
+        if (!$this->EndDate) {
             $this->EndDate = $this->Date;
         }
     }
@@ -68,27 +100,54 @@ class EventPage extends DetailPage implements PermissionProvider{
      * @param Member $member
      * @return boolean
      */
-    public function canView($member = null, $context = []) {
+    public function canView($member = null, $context = [])
+    {
         return parent::canView($member = null);
     }
 
-    public function canEdit($member = null, $context = []) {
+    /**
+     * @param $member
+     * @param $context
+     * @return bool|int
+     */
+    public function canEdit($member = null, $context = [])
+    {
         return Permission::check('Event_CRUD');
     }
 
-    public function canDelete($member = null, $context = []) {
+    /**
+     * @param $member
+     * @param $context
+     * @return bool|int
+     */
+    public function canDelete($member = null, $context = [])
+    {
         return Permission::check('Event_CRUD');
     }
 
-    public function canCreate($member = null, $context = []) {
-        return Permission::check('Event_CRUD');
+    /**
+     * @param $member
+     * @param $context
+     * @return bool|int
+     */
+    public function canCreate($member = null, $context = [])
+    {
+        if ($canCreate = Permission::check('Event_CRUD')) {
+            return parent::canCreate($member, $context);
+        }
+
+        return false;
     }
 
-    public function providePermissions() {
-        return array(
+    /**
+     * @return string[]
+     */
+    public function providePermissions()
+    {
+        return [
             //'Location_VIEW' => 'Read a Location',
-            'Event_CRUD' => 'Create, Update and Delete a Event Page'
-        );
+            'Event_CRUD' => 'Create, Update and Delete a Event Page',
+        ];
     }
 
 }
